@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import sklearn.preprocessing
 
+seed = 21
+
 def outlier_detector(df,column,k=1.5): #Run assign_outlier, not this one
     q1,q3 = df[column].quantile([.25,.75])
     iqr = q3 - q1
@@ -71,3 +73,20 @@ def scale_minmax(X_train,X_val,X_test):
     X_test[X_test.columns] = scaler.transform(X_test[X_test.columns])
     
     return X_train,X_val,X_test
+
+def plot_inertia(df):
+    inertia = []
+    for k in range(1,10):
+        kmeans = KMeans(n_clusters=k, random_state=seed)
+        kmeans.fit(df)
+        inertia.append(kmeans.inertia_)
+    
+    clust_inert = pd.DataFrame({'n_clusters':list(range(1,10)),'inertia':inertia})
+    
+    return sns.relplot(data=clust_inert,x='n_clusters',y='inertia',kind='line')
+
+def plot_kmeans_cluster(df,n):  
+    kmeans = KMeans(n_clusters=n, random_state=seed)
+    kmeans.fit(df)
+
+    sns.relplot(data=df,x=df.iloc[:,0],y=df.iloc[:,1],hue=pd.Series(kmeans.predict(df)))
